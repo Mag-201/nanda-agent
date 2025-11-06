@@ -4,3 +4,25 @@ jinoos/
 agents/__pycache__/
 conversation_logs/
 agents/test.py
+.sh
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv311/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.dbstock-agent/

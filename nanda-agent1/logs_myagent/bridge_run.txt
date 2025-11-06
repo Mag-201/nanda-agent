@@ -1,0 +1,9 @@
+python3: can't open file 'D:\\My_project\\nanda-agent\\nanda-agent1\\agent_bridge.py': [Errno 2] No such file or directory
+python3: can't open file 'D:\\My_project\\nanda-agent\\nanda-agent1\\agent_bridge.py': [Errno 2] No such file or directory
+python3: can't open file 'D:\\My_project\\nanda-agent\\nanda-agent1\\agent_bridge.py': [Errno 2] No such file or directory
+C:\Users\huhum\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\python.exe: can't open file 'D:\\My_project\\nanda-agent\\nanda-agent1\\agent_bridge.py': [Errno 2] No such file or directory
+C:\Users\huhum\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\python.exe: can't open file 'D:\\My_project\\nanda-agent\\nanda-agent1\\agent_bridge.py': [Errno 2] No such file or directory
+C:\Users\huhum\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\python.exe: can't open file 'D:\\My_project\\nanda-agent\\nanda-agent1\\agent_bridge.py': [Errno 2] No such file or directory
+C:\Users\huhum\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\python.exe: can't open file 'D:\\My_project\\nanda-agent\\nanda-agent1\\agent_bridge.py': [Errno 2] No such file or directory
+C:\Users\huhum\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\python.exe: can't open file 'D:\\My_project\\nanda-agent\\nanda-agent1\\agent_bridge.py': [Errno 2] No such file or directory
+C:\Users\huhum\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\python.exe: can't open file 'D:\\My_project\\nanda-agent\\nanda-agent1\\agent_bridge.py': [Errno 2] No such file or directory

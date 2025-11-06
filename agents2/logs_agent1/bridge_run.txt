@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "D:\My_project\nanda-agent\agents\agent_bridge.py", line 10, in <module>
+    from anthropic import Anthropic, APIStatusError
+ModuleNotFoundError: No module named 'anthropic'
+Traceback (most recent call last):
+  File "D:\My_project\nanda-agent\agents\agent_bridge.py", line 10, in <module>
+    from anthropic import Anthropic, APIStatusError
+ModuleNotFoundError: No module named 'anthropic'
+Traceback (most recent call last):
+  File "D:\My_project\nanda-agent\agents\agent_bridge.py", line 10, in <module>
+    from anthropic import Anthropic, APIStatusError
+ModuleNotFoundError: No module named 'anthropic'
+Traceback (most recent call last):
+  File "D:\My_project\nanda-agent\agents\agent_bridge.py", line 10, in <module>
+    from anthropic import Anthropic, APIStatusError
+ModuleNotFoundError: No module named 'anthropic'
+Traceback (most recent call last):
+  File "D:\My_project\nanda-agent\agents\agent_bridge.py", line 10, in <module>
+    from anthropic import Anthropic, APIStatusError
+ModuleNotFoundError: No module named 'anthropic'

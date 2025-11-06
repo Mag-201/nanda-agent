@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <title>Stock Agent — Web UI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{--bg:#0b1220;--panel:#121a2b;--muted:#8aa0c8;--text:#e9f0ff;--accent:#3aa3ff;--bubble:#18233a;--me:#1f2d4d;}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,PingFang SC,Helvetica Neue,Arial}
+    .app{display:grid;grid-template-columns:280px 1fr;height:100vh}
+    .left{background:var(--panel);border-right:1px solid #223154;display:flex;flex-direction:column}
+    .brand{padding:16px 16px 8px;font-weight:700;letter-spacing:.5px}
+    .status{padding:0 16px 12px;color:var(--muted);font-size:12px}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;margin-left:6px}
+    .ok{background:#153a25;color:#7df2a9}
+    .bad{background:#3a1520;color:#ff8aa5}
+    .sec{padding:12px 16px;border-top:1px solid #223154}
+    .sec h3{margin:0 0 10px 0;font-size:13px;color:#b7c6e9;text-transform:uppercase;letter-spacing:.6px}
+    .quick{display:flex;flex-wrap:wrap;gap:8px}
+    .quick button{background:#16243f;border:1px solid #27406e;color:#cfe2ff;border-radius:10px;padding:8px 10px;font-size:13px;cursor:pointer}
+    .quick button:hover{border-color:var(--accent)}
+    .right{display:flex;flex-direction:column}
+    .top{padding:12px 16px;border-bottom:1px solid #223154;display:flex;gap:8px;align-items:center}
+    .top button{background:#16243f;border:1px solid #27406e;color:#cfe2ff;border-radius:10px;padding:8px 10px;font-size:13px;cursor:pointer}
+    .chat{flex:1;overflow:auto;padding:18px}
+    .row{display:flex;margin:8px 0;gap:10px}
+    .row.me{justify-content:flex-end}
+    .bubble{max-width:70%;background:var(--bubble);padding:12px 14px;border-radius:14px;line-height:1.4;white-space:pre-wrap}
+    .me .bubble{background:var(--me)}
+    .meta{font-size:11px;color:#9ab1da;margin-top:2px}
+    .input{display:flex;gap:10px;padding:12px 16px;border-top:1px solid #223154}
+    .input input{flex:1;padding:12px 14px;border-radius:12px;border:1px solid #27406e;background:#0c1426;color:#e9f0ff;font-size:15px}
+    .input button{padding:12px 16px;border-radius:12px;border:1px solid #27406e;background:var(--accent);color:#001428;font-weight:700;cursor:pointer}
+    a.link{color:#9fd0ff;text-decoration:none}
+    .small{font-size:12px;color:#9ab1da}
+  </style>
+</head>
+<body>
+<div class="app">
+  <!-- 左侧：状态 & 快捷问题 -->
+  <aside class="left">
+    <div class="brand">Stock Agent 控制面板</div>
+    <div class="status small">
+      API: <a class="link" id="apiLink" target="_blank" rel="noreferrer"></a><br/>
+      连接：<span id="healthBadge" class="pill bad">检测中…</span><br/>
+      会话ID：<span id="cid" class="small">（自动分配）</span>
+    </div>
+
+    <div class="sec">
+      <h3>股票常用提问</h3>
+      <div class="quick">
+        <button data-msg="What's the current price of AAPL?">AAPL 价格</button>
+        <button data-msg="Give me today's top news about TSLA, bullet points.">TSLA 新闻</button>
+        <button data-msg="Compare NVDA vs AMD on valuation and growth in 5 bullets.">NVDA vs AMD</button>
+        <button data-msg="Explain the main risks for buying Coinbase (COIN) now.">COIN 风险</button>
+        <button data-msg="Show me a simple outlook for S&P 500 this week.">标普展望</button>
+        <button data-msg="@stock help">指令帮助</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h3>小提示</h3>
+      <div class="small">
+        · 这里是前端，**不内置行情**，只是把你的问题发给后端的 Agent。<br/>
+        · 如果你的 Agent 支持特殊指令（如 <code>@stock</code>、<code>/quote</code>），直接在输入框里用。<br/>
+        · 要改“股票逻辑”，请在 <code>agent_bridge.py</code> 或 Agent 处理代码里实现。
+      </div>
+    </div>
+  </aside>
+
+  <!-- 右侧：聊天 -->
+  <main class="right">
+    <div class="top">
+      <button id="newChat">新建会话</button>
+      <span class="small">新建后会生成新的 <code>conversation_id</code>，用于多轮上下文。</span>
+    </div>
+
+    <div id="chat" class="chat"></div>
+
+    <div class="input">
+      <input id="msg" placeholder="问我：'AAPL 现在多少钱？' 或 '@stock news TSLA' ..." />
+      <button id="send">发送</button>
+    </div>
+  </main>
+</div>
+
+<script>
+  // ——— 配置：改成你的 Cloudflare 公网地址 ———
+  const API_BASE = "https://deutsch-sparc-provision-police.trycloudflare.com";
+
+  // —— 基本元素
+  const apiLink = document.getElementById('apiLink');
+  const healthBadge = document.getElementById('healthBadge');
+  const cidEl = document.getElementById('cid');
+  const chatEl = document.getElementById('chat');
+  const msgEl = document.getElementById('msg');
+  const sendBtn = document.getElementById('send');
+  const newBtn = document.getElementById('newChat');
+
+  apiLink.textContent = API_BASE;
+  apiLink.href = API_BASE + "/api/health";
+
+  // —— 会话ID：本地持久化
+  let conversationId = localStorage.getItem('conversation_id') || "";
+  let agentId = "";
+
+  function setCid(id){
+    conversationId = id || "";
+    cidEl.textContent = conversationId ? conversationId : "（自动分配）";
+    if (conversationId) localStorage.setItem('conversation_id', conversationId);
+  }
+  setCid(conversationId);
+
+  // —— 渲染一条消息
+  function bubble(role, text){
+    const row = document.createElement('div');
+    row.className = 'row ' + (role === 'me' ? 'me' : 'bot');
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.textContent = text;
+    row.appendChild(b);
+    chatEl.appendChild(row);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+
+  // —— 发送
+  async function send(){
+    const text = msgEl.value.trim();
+    if(!text) return;
+    bubble('me', text);
+    msgEl.value = '';
+
+    try{
+      const res = await fetch(API_BASE + "/api/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          client_id: "web_ui",
+          conversation_id: conversationId || undefined
+        })
+      });
+      const data = await res.json();
+      if(!res.ok || data.error){
+        bubble('bot', "⚠️ 发送失败：" + (data.error || res.statusText));
+        return;
+      }
+      if (data.conversation_id && data.conversation_id !== conversationId){
+        setCid(data.conversation_id);
+      }
+      if (data.agent_id) agentId = data.agent_id;
+    }catch(e){
+      bubble('bot', "⚠️ 请求异常：" + e);
+    }
+  }
+
+  // —— 轮询拉取最新回复（读取后即清空）
+  async function poll(){
+    try{
+      const res = await fetch(API_BASE + "/api/render", { cache: "no-store" });
+      if(res.ok){
+        const data = await res.json();
+        if (data && data.message){
+          bubble('bot', (data.sender_name || 'Agent') + "：\n" + data.message);
+          // 如果后端回传了 conversation_id，也同步一下
+          if (data.conversation_id && data.conversation_id !== conversationId){
+            setCid(data.conversation_id);
+          }
+        }
+      }
+    }catch(e){
+      // 静默
+    }finally{
+      setTimeout(poll, 1000);
+    }
+  }
+
+  // —— 健康检查（状态灯）
+  async function ping(){
+    try{
+      const r = await fetch(API_BASE + "/api/health", {cache:"no-store"});
+      if(r.ok){
+        const d = await r.json();
+        healthBadge.textContent = "在线";
+        healthBadge.className = "pill ok";
+        if (d && d.agent_id) agentId = d.agent_id;
+      }else{
+        throw new Error("HTTP " + r.status);
+      }
+    }catch{
+      healthBadge.textContent = "离线";
+      healthBadge.className = "pill bad";
+    }finally{
+      setTimeout(ping, 4000);
+    }
+  }
+
+  // —— 快捷问题点击
+  document.querySelectorAll('.quick button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      msgEl.value = btn.getAttribute('data-msg') || '';
+      send();
+    });
+  });
+
+  // —— 事件绑定
+  sendBtn.addEventListener('click', send);
+  msgEl.addEventListener('keydown', e => { if(e.key === 'Enter') send(); });
+  newBtn.addEventListener('click', ()=>{
+    localStorage.removeItem('conversation_id');
+    setCid("");
+    bubble('bot', "🆕 开始新的会话。");
+  });
+
+  // —— 启动
+  ping();
+  poll();
+</script>
+</body>
+</html>
